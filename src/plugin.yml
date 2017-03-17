@@ -1,6 +1,6 @@
 main: com.forgedfactions.randomcommandtimer.RandomTimer
 name: RandomCommandTimer
-version: 1.0.0
+version: 1.0.3
 author: Darkm4tter
 commands:
   rct:
