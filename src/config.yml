@@ -1,7 +1,7 @@
 schedule:
-  say:
-    mintime: 120
-    maxtime: 3600
-    commands:
+  say: # name of command to run
+    mintime: 120 # minimum time to wait before executing command(s) (seconds)
+    maxtime: 3600 # maximum time to wait before executing command(s) (seconds)
+    commands: # list of commands to run
       - 'say This command will run randomly from 2 minutes to 1 hr!'
       - 'shout this will do the same!'

@@ -1,63 +1,64 @@
 package com.forgedfactions.randomcommandtimer;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+
 public class RandomTimer extends JavaPlugin {
 
-    public static List<Command> commandList = new ArrayList<>();
-    String name = "";
-    int min = 0, max = 0;
-    List<String> comms = new ArrayList<>();
-    List<String> names = new ArrayList<>();
+    private static final List<Command> commandList = new ArrayList<>(); //holds command objects
+    private final List<String> names = new ArrayList<>();
 
 
     public void onEnable() {
-        this.saveDefaultConfig();
-        registerCommands();
+        this.saveDefaultConfig(); //creates config
+        registerCommands(); //creates and adds command objects
     }
 
     public boolean onCommand(CommandSender sender, org.bukkit.command.Command cmd, String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("rct")) {
+        if (cmd.getName().equalsIgnoreCase("rct")) { //checking command
             Player p = (Player) sender;
-            if (sender instanceof Player && args != null) {
+            if (sender instanceof Player && args != null) {  //checking if player sends command && has an argument
                 if (args[0].equalsIgnoreCase("reload")) {
-                    reloadConfig();
-                    registerCommands();
-                } else if (names.contains(args[0])) {
-                    int index = getIndex(args[0]);
-                    if (args[1] == "start" && index != -1) {
-                        final int[] rand = {(int) (Math.random() * commandList.get(index).getMax()) + commandList.get(index).getMin()};
-                        commandList.get(index).setRunning(true);
-                        commandList.get(index).id = Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-                            @Override
-                            public void run() {
-                                int secs = 0;
-                                if (secs >= rand[0]) {
-                                    for (int i = 0; i < commandList.get(index).getCommands().size(); i++) {
-                                        Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), commandList.get(index).getCommands().get(i));
-                                    }
-                                    rand[0] = (int) (Math.random() * commandList.get(index).getMax()) + commandList.get(index).getMin();
-                                    Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.GREEN + "[RCT] '" + args[0] + "' was successfully executed! '" + rand + "' seconds until next execution.");
-                                    secs = 0;
-                                }
-                                secs++;
-                            }
-                        }, 20, 20);
-                        p.sendMessage(ChatColor.GREEN.toString() + "[RCT] '" + args[0] + "' was successfully started!");
-                    } else if (args[1] == "stop" && index != -1) {
-                        if (commandList.get(getIndex(args[0])).getRunning() == true) {
-                            Bukkit.getScheduler().cancelTask(commandList.get(getIndex(args[0])).getId());
-                            commandList.get(getIndex(args[0])).setRunning(false);
-                            p.sendMessage(ChatColor.GREEN.toString() + "[RCT] '" + args[0] + "' was successfully stopped!");
+                    reloadConfig(); //reload config file from disk
+                    registerCommands(); //recreate command objects
+                } else if (names.contains(args[0])) { //checks if object name is in config - as per register commands method
+                    int index = getIndex(args[0]); //saves index of command in commandList
+                    if (Objects.equals(args[1], "start") && index != -1) { //checks if command is start as well as if its in the list
+                        if (commandList.get(index).getRunning()) { //checks to see if command is already running
+                            p.sendMessage(ChatColor.RED.toString() + "[RTC] '" + args[0] + "' is already running!");
                         } else {
+                            final int[] rand = {(int) (Math.random() * commandList.get(index).getMax()) + commandList.get(index).getMin()}; //sets first random delay
+                            commandList.get(index).setRunning(true); //sets running to true
+                            commandList.get(index).setId(Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() { //schedules repeating task
+                                @Override
+                                public void run() {
+                                    if (commandList.get(index).getCycles() >= rand[0]) { //waits for delay
+                                        for (int i = 0; i < commandList.get(index).getCommands().size(); i++) { //executes all commands in list
+                                            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), commandList.get(index).getCommands().get(i)); //dispatch commands
+                                        }
+                                        rand[0] = (int) (Math.random() * commandList.get(index).getMax()) + commandList.get(index).getMin(); //gets new random delay
+                                        Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.GREEN + "[RCT] '" + args[0] + "' was successfully executed! '" + rand[0] + "' seconds until next execution.");
+                                        commandList.get(index).setCycles(0);
+                                    }
+                                    commandList.get(index).setCycles(commandList.get(index).getCycles() + 1); //adds cycles + 1
+                                }
+                            }, 20, 20)); //runnable executes once per second / 20 ticks
+                            p.sendMessage(ChatColor.GREEN.toString() + "[RCT] '" + args[0] + "' was successfully started!");
+                        }
+                    } else if (Objects.equals(args[1], "stop") && index != -1) { //stops command
+                        if (commandList.get(getIndex(args[0])).getRunning()) { //checks to make sure its running
+                            Bukkit.getScheduler().cancelTask(commandList.get(getIndex(args[0])).getId()); //stops task from id set earlier
+                            commandList.get(getIndex(args[0])).setRunning(false); //sets running to false
+                            p.sendMessage(ChatColor.GREEN.toString() + "[RCT] '" + args[0] + "' was successfully stopped!");
+                        } else {  //various warnings to player below
                             p.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' is not currently running. \nUse '/rct " + args[0] + " start' to start running the command.");
                         }
                     } else if (index == -1) {
@@ -74,44 +75,31 @@ public class RandomTimer extends JavaPlugin {
         return false;
     }
 
-    public void registerCommands() {
-        commandList.clear();
-        Iterator var2 = this.getConfig().getConfigurationSection("schedule").getKeys(false).iterator();
+    private void registerCommands() {
+        commandList.clear(); //clears any previous commands
+        Iterator var2 = this.getConfig().getConfigurationSection("schedule").getKeys(false).iterator(); //goes through commands
         while (var2.hasNext()) {
             final String key = (String) var2.next();
-            name = key;
-            names.add(key);
-            if (isInt(this.getConfig().getInt("schedule." + key + ".mintime")) && isInt(this.getConfig().getInt("schedule." + key + "maxtime"))) {
-                min = this.getConfig().getInt("schedule." + key + ".mintime");
-                max = this.getConfig().getInt("schedule." + key + "maxtime");
-                comms = this.getConfig().getStringList("schedule." + key + ".commands");
-                addCommand(new Command(name, min, max, comms));
-            } else {
-                this.getServer().getConsoleSender().sendMessage(ChatColor.RED + "[RCT] Failed to set up command(s). Range is not a valid number.");
-                break;
-            }
+            names.add(key); //adds command to reference list
+            int min = this.getConfig().getInt("schedule." + key + ".mintime");
+            int max = this.getConfig().getInt("schedule." + key + "maxtime");
+            List<String> comms = this.getConfig().getStringList("schedule." + key + ".commands");
+            addCommand(new Command(key, min, max, comms)); //adds command to commandList
         }
     }
 
-    public static int getIndex(String name) {
+    private static int getIndex(String name) {
         for (int i = 0; i < commandList.size(); i++) {
-            if (commandList.get(i).getName().equalsIgnoreCase(name)) return i;
+            if (commandList.get(i).getName().equalsIgnoreCase(name))
+                return i; //finds index of command in the commandList
         }
         return -1;
     }
 
 
-    public static void addCommand(Command com) {
-        commandList.add(com);
+    private static void addCommand(Command com) {
+        commandList.add(com); //adds command to list
     }
 
 
-    private boolean isInt(int num) {
-        try {
-            Integer.parseInt(num + "");
-            return true;
-        } catch (Exception var3) {
-            return false;
-        }
-    }
 }
