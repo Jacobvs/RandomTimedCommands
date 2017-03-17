@@ -1,0 +1,7 @@
+schedule:
+  say:
+    mintime: 120
+    maxtime: 3600
+    commands:
+      - 'say This command will run randomly from 2 minutes to 1 hr!'
+      - 'shout this will do the same!'
