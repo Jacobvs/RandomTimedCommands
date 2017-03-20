@@ -7,7 +7,7 @@ import java.util.List;
 class Command {
     private final String name;
     private final int min, max;
-    private int id, cycles;
+    private int id, cycles, rand;
     private boolean running = false;
     private List<String> commands = new ArrayList<>();
 
@@ -26,12 +26,20 @@ class Command {
         this.running = running;
     } //sets running true/false
 
-    void setCycles(int cycles){
+    void setCycles(int cycles) {
         this.cycles = cycles;
+    }
+
+    void setRand(int rand) {
+        this.rand = rand;
     }
 
     String getName() {
         return name;
+    }
+
+    int getRand() {
+        return rand;
     }
 
     int getMin() {
@@ -50,7 +58,7 @@ class Command {
         return id;
     }
 
-    int getCycles(){
+    int getCycles() {
         return cycles;
     }
 

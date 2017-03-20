@@ -15,7 +15,6 @@ public class RandomTimer extends JavaPlugin {
     private static final List<Command> commandList = new ArrayList<>(); //holds command objects
     private final List<String> names = new ArrayList<>();
 
-
     public void onEnable() {
         this.saveDefaultConfig(); //creates config
         registerCommands(); //creates and adds command objects
@@ -27,6 +26,7 @@ public class RandomTimer extends JavaPlugin {
                 if (args[0].equalsIgnoreCase("reload")) {
                     reloadConfig(); //reload config file from disk
                     registerCommands(); //recreate command objects
+                    sender.sendMessage(ChatColor.GREEN.toString() + "[RCT] RCT was successfully reloaded!");
                 } else if (names.contains(args[0])) { //checks if object name is in config - as per register commands method
                     int index = getIndex(args[0]); //saves index of command in commandList
                     if (args.length > 1) {
@@ -34,17 +34,17 @@ public class RandomTimer extends JavaPlugin {
                             if (commandList.get(index).getRunning()) { //checks to see if command is already running
                                 sender.sendMessage(ChatColor.RED.toString() + "[RTC] '" + args[0] + "' is already running!");
                             } else {
-                                final int[] rand = {(int) (Math.random() * commandList.get(index).getMax()) + commandList.get(index).getMin()}; //sets first random delay
+                                commandList.get(index).setRand((int) (Math.random() * commandList.get(index).getMax()) + commandList.get(index).getMin()); //sets first random delay
                                 commandList.get(index).setRunning(true); //sets running to true
                                 commandList.get(index).setId(Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() { //schedules repeating task
                                     @Override
                                     public void run() {
-                                        if (commandList.get(index).getCycles() >= rand[0]) { //waits for delay
+                                        if (commandList.get(index).getCycles() >= commandList.get(index).getRand()) { //waits for delay
                                             for (int i = 0; i < commandList.get(index).getCommands().size(); i++) { //executes all commands in list
                                                 Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), commandList.get(index).getCommands().get(i)); //dispatch commands
                                             }
-                                            rand[0] = (int) (Math.random() * commandList.get(index).getMax()) + commandList.get(index).getMin(); //gets new random delay
-                                            Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.GREEN + "[RCT] '" + args[0] + "' was successfully executed! '" + rand[0] + "' seconds until next execution.");
+                                            commandList.get(index).setRand((int) (Math.random() * commandList.get(index).getMax()) + commandList.get(index).getMin()); //gets new random delay
+                                            Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.GREEN + "[RCT] '" + args[0] + "' was successfully executed! '" + commandList.get(index).getRand() + "' seconds until next execution.");
                                             commandList.get(index).setCycles(0);
                                         }
                                         commandList.get(index).setCycles(commandList.get(index).getCycles() + 1); //adds cycles + 1
@@ -70,7 +70,9 @@ public class RandomTimer extends JavaPlugin {
                     sender.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' is not a valid command!");
                 }
             }
-            sender.sendMessage(ChatColor.RED.toString() + "[RCT] Usage: /rct [name] start/stop OR /rct reload");
+            else{
+                sender.sendMessage(ChatColor.RED.toString() + "[RCT] Usage: /rct [name] start/stop OR /rct reload");
+            }
             return true;
         }
         return false;
