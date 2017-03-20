@@ -34,7 +34,7 @@ public class RandomTimer extends JavaPlugin {
                             if (commandList.get(index).getRunning()) { //checks to see if command is already running
                                 sender.sendMessage(ChatColor.RED.toString() + "[RTC] '" + args[0] + "' is already running!");
                             } else {
-                                commandList.get(index).setRand((int) (Math.random() * commandList.get(index).getMax()) + commandList.get(index).getMin()); //sets first random delay
+                                commandList.get(index).setRand(commandList.get(index).getMin()+ (int)(Math.random() * ((commandList.get(index).getMax() - commandList.get(index).getMin()) + 1))); //sets first random delay
                                 commandList.get(index).setRunning(true); //sets running to true
                                 commandList.get(index).setId(Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() { //schedules repeating task
                                     @Override
@@ -43,7 +43,7 @@ public class RandomTimer extends JavaPlugin {
                                             for (int i = 0; i < commandList.get(index).getCommands().size(); i++) { //executes all commands in list
                                                 Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), commandList.get(index).getCommands().get(i)); //dispatch commands
                                             }
-                                            commandList.get(index).setRand((int) (Math.random() * commandList.get(index).getMax()) + commandList.get(index).getMin()); //gets new random delay
+                                            commandList.get(index).setRand(commandList.get(index).getMin()+ (int)(Math.random() * ((commandList.get(index).getMax() - commandList.get(index).getMin()) + 1))); //gets new random delay
                                             Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.GREEN + "[RCT] '" + args[0] + "' was successfully executed! '" + commandList.get(index).getRand() + "' seconds until next execution.");
                                             commandList.get(index).setCycles(0);
                                         }
