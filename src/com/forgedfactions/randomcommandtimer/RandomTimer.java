@@ -51,7 +51,7 @@ public class RandomTimer extends JavaPlugin {
                                         commandList.get(index).setCycles(commandList.get(index).getCycles() + 1); //adds cycles + 1
                                     }
                                 }, 20, 20)); //runnable executes once per second / 20 ticks
-                                sender.sendMessage(ChatColor.GREEN.toString() + "[RCT] '" + args[0] + "' was successfully started!");
+                                sender.sendMessage(ChatColor.GREEN.toString() + "[RCT] '" + args[0] + "' was successfully started! '" + commandList.get(index).getRand() + "' seconds until next execution.");
                             }
                         } else if (Objects.equals(args[1], "stop") && index != -1) { //stops command
                             if (commandList.get(getIndex(args[0])).getRunning()) { //checks to make sure its running
