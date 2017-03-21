@@ -80,6 +80,10 @@ public class RandomTimer extends JavaPlugin {
     }
 
     private void registerCommands() {
+        for(int i = 0; i<commandList.size(); i++){ //stops all running commands
+            if (commandList.get(i).getRunning()){
+                Bukkit.getScheduler().cancelTask(commandList.get(i).getId());}
+        }
         commandList.clear(); //clears any previous commands
         Iterator var2 = this.getConfig().getConfigurationSection("schedule").getKeys(false).iterator(); //goes through commands
         while (var2.hasNext()) {
