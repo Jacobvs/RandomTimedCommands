@@ -18,6 +18,7 @@ public class RandomTimer extends JavaPlugin {
     public void onEnable() {
         this.saveDefaultConfig(); //creates config
         registerCommands(); //creates and adds command objects
+        Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.GREEN.toString() + "[RCT] is now enabled!");
     }
 
     public boolean onCommand(CommandSender sender, org.bukkit.command.Command cmd, String label, String[] args) {
@@ -34,7 +35,7 @@ public class RandomTimer extends JavaPlugin {
                             if (commandList.get(index).getRunning()) { //checks to see if command is already running
                                 sender.sendMessage(ChatColor.RED.toString() + "[RTC] '" + args[0] + "' is already running!");
                             } else {
-                                commandList.get(index).setRand(commandList.get(index).getMin()+ (int)(Math.random() * ((commandList.get(index).getMax() - commandList.get(index).getMin()) + 1))); //sets first random delay
+                                commandList.get(index).setRand((int)(Math.random() * commandList.get(index).getMax()) + commandList.get(index).getMin()); //sets first random delay
                                 commandList.get(index).setRunning(true); //sets running to true
                                 commandList.get(index).setId(Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() { //schedules repeating task
                                     @Override
@@ -43,8 +44,8 @@ public class RandomTimer extends JavaPlugin {
                                             for (int i = 0; i < commandList.get(index).getCommands().size(); i++) { //executes all commands in list
                                                 Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), commandList.get(index).getCommands().get(i)); //dispatch commands
                                             }
-                                            commandList.get(index).setRand(commandList.get(index).getMin()+ (int)(Math.random() * ((commandList.get(index).getMax() - commandList.get(index).getMin()) + 1))); //gets new random delay
-                                            Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.GREEN + "[RCT] '" + args[0] + "' was successfully executed! '" + commandList.get(index).getRand() + "' seconds until next execution.");
+                                            commandList.get(index).setRand((int)(Math.random() * commandList.get(index).getMax()) + commandList.get(index).getMin()); //gets new random delay
+                                            Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.GREEN.toString() + "[RCT] '" + args[0] + "' was successfully executed! '" + commandList.get(index).getRand() + "' seconds until next execution.");
                                             commandList.get(index).setCycles(0);
                                         }
                                         commandList.get(index).setCycles(commandList.get(index).getCycles() + 1); //adds cycles + 1
@@ -85,7 +86,7 @@ public class RandomTimer extends JavaPlugin {
             final String key = (String) var2.next();
             names.add(key); //adds command to reference list
             int min = this.getConfig().getInt("schedule." + key + ".mintime");
-            int max = this.getConfig().getInt("schedule." + key + "maxtime");
+            int max = this.getConfig().getInt("schedule." + key + ".maxtime");
             List<String> comms = this.getConfig().getStringList("schedule." + key + ".commands");
             addCommand(new Command(key, min, max, comms)); //adds command to commandList
         }

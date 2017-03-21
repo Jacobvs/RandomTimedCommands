@@ -1,8 +1,8 @@
 main: com.forgedfactions.randomcommandtimer.RandomTimer
 name: RandomCommandTimer
-version: 1.0.3
+version: 1.0.7
 author: Darkm4tter
 commands:
   rct:
     description: Executes a command any time in a set range.
-    usage: /rct [command name] [start/stop] - Start or stop a running command \n/rct reload - Reloads the config
+    usage: /rct [command name] [start/stop]

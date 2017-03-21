@@ -18,13 +18,14 @@ class Command {
         this.commands = commands;
     }
 
+    //setter methods
     void setId(int id) {
         this.id = id;
     } //sets id of command after starting task
 
     void setRunning(boolean running) {
         this.running = running;
-    } //sets running true/false
+    }
 
     void setCycles(int cycles) {
         this.cycles = cycles;
@@ -34,6 +35,7 @@ class Command {
         this.rand = rand;
     }
 
+    //getter methods
     String getName() {
         return name;
     }
