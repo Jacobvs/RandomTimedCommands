@@ -18,7 +18,11 @@ public class RandomTimer extends JavaPlugin {
     public void onEnable() {
         this.saveDefaultConfig(); //creates config
         registerCommands(); //creates and adds command objects
-        Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.GREEN.toString() + "RandomTimedCommands is now enabled!");
+        Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        Bukkit.getServer().getConsoleSender().sendMessage("RandomTimedCommands is now enabled!");
+        Bukkit.getServer().getConsoleSender().sendMessage("Version 1.1.8");
+        Bukkit.getServer().getConsoleSender().sendMessage("Developed by play.forgedfactions.com");
+        Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     }
 
     public boolean onCommand(CommandSender sender, org.bukkit.command.Command cmd, String label, String[] args) {
