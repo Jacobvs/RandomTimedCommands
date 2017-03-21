@@ -1,6 +1,6 @@
 main: com.forgedfactions.randomcommandtimer.RandomTimer
 name: RandomCommandTimer
-version: 1.1.4
+version: 1.1.5
 author: Darkm4tter
 website: www.forgedfactions.com
 prefix: RCT
@@ -13,7 +13,7 @@ commands:
     description: Executes a command any time in a set range.
     permission: rct.admin
     usage: /rct [command name] [start/stop]
-  reload:
-      description: Reload the plugin
+  rct reload:
+      description: /rct reload - Reload the plugin
       permission: rct.admin
       usage: /rct reload
