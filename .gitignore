@@ -13,7 +13,6 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
 *.war
 *.ear
 *.zip
@@ -28,3 +27,4 @@ hs_err_pid*
 .idea/workspace.xml
 /.idea/
 /out/
+/_config.yml
