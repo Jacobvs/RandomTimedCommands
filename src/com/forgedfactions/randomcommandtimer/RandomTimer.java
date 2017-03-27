@@ -18,9 +18,9 @@ public class RandomTimer extends JavaPlugin {
     public void onEnable() {
         this.saveDefaultConfig(); //creates config
         registerCommands(); //creates and adds command objects
-        Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~[RCT]~~~~~~~~~~~~~~~~");
         Bukkit.getServer().getConsoleSender().sendMessage("RandomTimedCommands is now enabled!");
-        Bukkit.getServer().getConsoleSender().sendMessage("Version 1.1.10");
+        Bukkit.getServer().getConsoleSender().sendMessage("Version 2.0.2");
         Bukkit.getServer().getConsoleSender().sendMessage("Developed by play.forgedfactions.com");
         Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     }
@@ -32,39 +32,17 @@ public class RandomTimer extends JavaPlugin {
                     reloadConfig(); //reload config file from disk
                     registerCommands(); //recreate command objects
                     sender.sendMessage(ChatColor.GREEN.toString() + "[RCT] RCT was successfully reloaded!");
+                } else if (args[0].equalsIgnoreCase("help")) {
+                    sendHelp(sender);
                 } else if (names.contains(args[0])) { //checks if object name is in config - as per register commands method
                     int index = getIndex(args[0]); //saves index of command in commandList
                     if (args.length > 1) {
                         if (Objects.equals(args[1], "start") && index != -1) { //checks if command is start as well as if its in the list
-                            if (commandList.get(index).getRunning()) { //checks to see if command is already running
-                                sender.sendMessage(ChatColor.RED.toString() + "[RTC] '" + args[0] + "' is already running!");
-                            } else {
-                                commandList.get(index).setRand(commandList.get(index).getMin()+ (int)(Math.random() * ((commandList.get(index).getMax() - commandList.get(index).getMin()) + 1))); //sets first random delay
-                                commandList.get(index).setRunning(true); //sets running to true
-                                commandList.get(index).setId(Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() { //schedules repeating task
-                                    @Override
-                                    public void run() {
-                                        if (commandList.get(index).getCycles() >= commandList.get(index).getRand()) { //waits for delay
-                                            for (int i = 0; i < commandList.get(index).getCommands().size(); i++) { //executes all commands in list
-                                                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), commandList.get(index).getCommands().get(i)); //dispatch commands
-                                            }
-                                            commandList.get(index).setRand(commandList.get(index).getMin()+ (int)(Math.random() * ((commandList.get(index).getMax() - commandList.get(index).getMin()) + 1))); //gets new random delay
-                                            Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.GREEN.toString() + args[0] + "' was successfully executed! '" + commandList.get(index).getRand() + "' seconds until next execution.");
-                                            commandList.get(index).setCycles(0);
-                                        }
-                                        commandList.get(index).setCycles(commandList.get(index).getCycles() + 1); //adds cycles + 1
-                                    }
-                                }, 20, 20)); //runnable executes once per second / 20 ticks
-                                sender.sendMessage(ChatColor.GREEN.toString() + "[RCT] '" + args[0] + "' was successfully started! '" + commandList.get(index).getRand() + "' seconds until next execution.");
-                            }
+                            startCommand(sender, args, index);
                         } else if (Objects.equals(args[1], "stop") && index != -1) { //stops command
-                            if (commandList.get(getIndex(args[0])).getRunning()) { //checks to make sure its running
-                                Bukkit.getScheduler().cancelTask(commandList.get(getIndex(args[0])).getId()); //stops task from id set earlier
-                                commandList.get(getIndex(args[0])).setRunning(false); //sets running to false
-                                sender.sendMessage(ChatColor.GREEN.toString() + "[RCT] '" + args[0] + "' was successfully stopped!");
-                            } else {  //various warnings to player below
-                                sender.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' is not currently running. \nUse '/rct " + args[0] + " start' to start running the command.");
-                            }
+                            stopCommand(sender, args, index);
+                        } else if(Objects.equals(args[1], "execute")) {
+                            executeCommand(sender, args, index);
                         } else if (index == -1) {
                             sender.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' was not found in registered commands!");
                         }
@@ -74,19 +52,62 @@ public class RandomTimer extends JavaPlugin {
                 } else {
                     sender.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' is not a valid command!");
                 }
-            }
-            else{
-                sender.sendMessage(ChatColor.RED.toString() + "[RCT] Usage: /rct [name] start/stop OR /rct reload");
+            } else {
+                sendHelp(sender);
             }
             return true;
         }
         return false;
     }
 
+    private void startCommand(CommandSender sender, String[] args, int index) {
+        if (commandList.get(index).getRunning()) { //checks to see if command is already running
+            sender.sendMessage(ChatColor.RED.toString() + "[RTC] '" + args[0] + "' is already running!");
+        } else {
+            commandList.get(index).setRand(commandList.get(index).getMin() + (int) (Math.random() * ((commandList.get(index).getMax() - commandList.get(index).getMin()) + 1))); //sets first random delay
+            commandList.get(index).setRunning(true); //sets running to true
+            commandList.get(index).setId(Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() { //schedules repeating task
+                @Override
+                public void run() {
+                    if (commandList.get(index).getCycles() >= commandList.get(index).getRand()) { //waits for delay
+                        runCommands(args, index);
+                        commandList.get(index).setRand(commandList.get(index).getMin() + (int) (Math.random() * ((commandList.get(index).getMax() - commandList.get(index).getMin()) + 1))); //gets new random delay
+                        commandList.get(index).setCycles(0);
+                    }
+                    commandList.get(index).setCycles(commandList.get(index).getCycles() + 1); //adds cycles + 1
+                }
+            }, 20, 20)); //runnable executes once per second / 20 ticks
+            sender.sendMessage(ChatColor.GREEN.toString() + "[RCT] '" + args[0] + "' was successfully started! '" + commandList.get(index).getRand() + "' seconds until next execution.");
+        }
+    }
+
+    private void stopCommand(CommandSender sender, String[] args, int index) {
+        if (commandList.get(index).getRunning()) { //checks to make sure its running
+            Bukkit.getScheduler().cancelTask(commandList.get(index).getId()); //stops task from id set earlier
+            commandList.get(index).setRunning(false); //sets running to false
+            sender.sendMessage(ChatColor.GREEN.toString() + "[RCT] '" + args[0] + "' was successfully stopped!");
+        } else {  //various warnings to player below
+            sender.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' is not currently running. \nUse '/rct " + args[0] + " start' to start running the command.");
+        }
+    }
+
+    private void executeCommand(CommandSender sender, String[] args, int index){
+        commandList.get(index).setCycles(0);
+        runCommands(args, index);
+    }
+
+    private void runCommands(String[] args, int index) {
+        for (int i = 0; i < commandList.get(index).getCommands().size(); i++) { //executes all commands in list
+            Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), commandList.get(index).getCommands().get(i)); //dispatch commands
+        }
+        Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.GREEN.toString() + args[0] + "' was successfully executed! '" + commandList.get(index).getRand() + "' seconds until next execution.");
+    }
+
     private void registerCommands() {
-        for(int i = 0; i<commandList.size(); i++){ //stops all running commands
-            if (commandList.get(i).getRunning()){
-                Bukkit.getScheduler().cancelTask(commandList.get(i).getId());}
+        for (int i = 0; i < commandList.size(); i++) { //stops all running commands
+            if (commandList.get(i).getRunning()) {
+                Bukkit.getScheduler().cancelTask(commandList.get(i).getId());
+            }
         }
         commandList.clear(); //clears any previous commands
         Iterator var2 = this.getConfig().getConfigurationSection("schedule").getKeys(false).iterator(); //goes through commands
@@ -108,10 +129,17 @@ public class RandomTimer extends JavaPlugin {
         return -1;
     }
 
+    private void sendHelp(CommandSender sender) {
+        sender.sendMessage("~~~~~~~~~~~~~[RCT Help]~~~~~~~~~~~~~~");
+        sender.sendMessage("/rct reload");
+        sender.sendMessage("- reload the plugin");
+        sender.sendMessage("/rct <commandname> start/stop");
+        sender.sendMessage("- start or stop a command");
+        sender.sendMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    }
+
 
     private static void addCommand(Command com) {
         commandList.add(com); //adds command to list
     }
-
-
 }
