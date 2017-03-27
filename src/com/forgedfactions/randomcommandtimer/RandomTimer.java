@@ -2,6 +2,7 @@ package com.forgedfactions.randomcommandtimer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -20,40 +21,52 @@ public class RandomTimer extends JavaPlugin {
         registerCommands(); //creates and adds command objects
         Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~[RCT]~~~~~~~~~~~~~~~~");
         Bukkit.getServer().getConsoleSender().sendMessage("RandomTimedCommands is now enabled!");
-        Bukkit.getServer().getConsoleSender().sendMessage("Version 2.0.3");
+        Bukkit.getServer().getConsoleSender().sendMessage("Version 3.1.3");
         Bukkit.getServer().getConsoleSender().sendMessage("Developed by play.forgedfactions.com");
         Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     }
 
     public boolean onCommand(CommandSender sender, org.bukkit.command.Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("rct")) { //checking command
-            if (args.length > 0) {  //checking if player sends command && has an argument
-                if (args[0].equalsIgnoreCase("reload")) {
-                    reloadConfig(); //reload config file from disk
-                    registerCommands(); //recreate command objects
-                    sender.sendMessage(ChatColor.GREEN.toString() + "[RCT] RCT was successfully reloaded!");
-                } else if (args[0].equalsIgnoreCase("help")) {
-                    sendHelp(sender);
-                } else if (names.contains(args[0])) { //checks if object name is in config - as per register commands method
-                    int index = getIndex(args[0]); //saves index of command in commandList
-                    if (args.length > 1) {
-                        if (Objects.equals(args[1], "start") && index != -1) { //checks if command is start as well as if its in the list
-                            startCommand(sender, args, index);
-                        } else if (Objects.equals(args[1], "stop") && index != -1) { //stops command
-                            stopCommand(sender, args, index);
-                        } else if(Objects.equals(args[1], "execute")) {
-                            executeCommand(sender, args, index);
-                        } else if (index == -1) {
-                            sender.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' was not found in registered commands!");
+            if(sender.hasPermission("rct.admin")) {
+                if (args.length > 0) {  //checking if player sends command && has an argument
+                    if (args[0].equalsIgnoreCase("reload")) {
+                        getConfig();
+                        reloadConfig(); //reload config file from disk
+                        registerCommands(); //recreate command objects
+                        Bukkit.getPluginManager().disablePlugin(Bukkit.getServer().getPluginManager().getPlugin("RandomCommandTimer"));
+                        Bukkit.getPluginManager().enablePlugin(Bukkit.getServer().getPluginManager().getPlugin("RandomCommandTimer"));
+                        sender.sendMessage(ChatColor.GREEN.toString() + "[RCT] RCT was successfully reloaded!");
+                    } else if (args[0].equalsIgnoreCase("help")) {
+                        sendHelp(sender);
+                    } else if (args[0].equalsIgnoreCase("list")) {
+                        listCommands(sender);
+                    } else if (names.contains(args[0])) { //checks if object name is in config - as per register commands method
+                        int index = getIndex(args[0]); //saves index of command in commandList
+                        if (args.length > 1) {
+                            if (args[1].equalsIgnoreCase("start") && index != -1) { //checks if command is start as well as if its in the list
+                                startCommand(sender, args, index);
+                            } else if (args[1].equalsIgnoreCase("stop") && index != -1) { //stops command
+                                stopCommand(sender, args, index);
+                            } else if (args[1].equalsIgnoreCase("execute")) {
+                                executeCommand(sender, args, index);
+                            } else if (args[1].equalsIgnoreCase("time")) {
+                                sender.sendMessage("Time left on " + args[0] + ": " + (commandList.get(index).getRand() - commandList.get(index).getCycles()) + " seconds.");
+                            } else if (index == -1) {
+                                sender.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' was not found in registered commands!");
+                            }
+                        } else {
+                            sender.sendMessage(ChatColor.RED.toString() + "[RCT] Please use 'start', 'stop', 'execute', or 'time'");
                         }
                     } else {
-                        sender.sendMessage(ChatColor.RED.toString() + "[RCT] Please use 'start' or 'stop' to stop the command");
+                        sender.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' is not a valid command!");
+                        sender.sendMessage(ChatColor.RED.toString() + "[RCT] Please use 'start', 'stop', 'execute', or 'time'");
                     }
                 } else {
-                    sender.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' is not a valid command!");
+                    sendHelp(sender);
                 }
             } else {
-                sendHelp(sender);
+                sender.sendMessage(ChatColor.RED + "[RCT] No permission to execute this command!");
             }
             return true;
         }
@@ -104,6 +117,14 @@ public class RandomTimer extends JavaPlugin {
         Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.GREEN.toString() + args[0] + "' was successfully executed! '" + commandList.get(index).getRand() + "' seconds until next execution.");
     }
 
+    private void listCommands(CommandSender sender){
+        sender.sendMessage("~~~~~~~~~~~[RCT Commands]~~~~~~~~~~~~");
+        for (int i = 0; i < commandList.size(); i++){
+            sender.sendMessage("* " + commandList.get(i).getName());
+        }
+        sender.sendMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    }
+
     private void registerCommands() {
         for (int i = 0; i < commandList.size(); i++) { //stops all running commands
             if (commandList.get(i).getRunning()) {
@@ -131,12 +152,14 @@ public class RandomTimer extends JavaPlugin {
     }
 
     private void sendHelp(CommandSender sender) {
-        sender.sendMessage("~~~~~~~~~~~~~[RCT Help]~~~~~~~~~~~~~~");
+        sender.sendMessage("~~~~~~~~~~~~~~~[RCT Help]~~~~~~~~~~~~~~~~");
         sender.sendMessage("/rct reload");
         sender.sendMessage("- reload the plugin");
-        sender.sendMessage("/rct <commandname> start/stop");
+        sender.sendMessage("/rct <commandname> start/stop/execute/time");
         sender.sendMessage("- start or stop a command");
-        sender.sendMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        sender.sendMessage("- execute a command immediately");
+        sender.sendMessage("- display time left until next execution");
+        sender.sendMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     }
 
 
