@@ -2,14 +2,12 @@ package com.forgedfactions.randomcommandtimer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Color;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 
 public class RandomTimer extends JavaPlugin {
 
@@ -21,7 +19,7 @@ public class RandomTimer extends JavaPlugin {
         registerCommands(); //creates and adds command objects
         Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~[RCT]~~~~~~~~~~~~~~~~");
         Bukkit.getServer().getConsoleSender().sendMessage("RandomTimedCommands is now enabled!");
-        Bukkit.getServer().getConsoleSender().sendMessage("Version 3.1.4");
+        Bukkit.getServer().getConsoleSender().sendMessage("Version 3.1.5");
         Bukkit.getServer().getConsoleSender().sendMessage("Developed by play.forgedfactions.com");
         Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     }
@@ -105,6 +103,7 @@ public class RandomTimer extends JavaPlugin {
     }
 
     private void executeCommand(CommandSender sender, String[] args, int index){
+        commandList.get(index).setRand(commandList.get(index).getMin() + (int) (Math.random() * ((commandList.get(index).getMax() - commandList.get(index).getMin()) + 1))); //gets new random delay
         commandList.get(index).setCycles(0);
         runCommands(args, index);
         sender.sendMessage(ChatColor.GREEN + "[RCT] '" + args[0] + "' was successfully executed!");
