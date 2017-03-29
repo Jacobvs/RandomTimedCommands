@@ -19,14 +19,14 @@ public class RandomTimer extends JavaPlugin {
         registerCommands(); //creates and adds command objects
         Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~[RCT]~~~~~~~~~~~~~~~~");
         Bukkit.getServer().getConsoleSender().sendMessage("RandomTimedCommands is now enabled!");
-        Bukkit.getServer().getConsoleSender().sendMessage("Version 3.1.5");
+        Bukkit.getServer().getConsoleSender().sendMessage("Version 3.1.6");
         Bukkit.getServer().getConsoleSender().sendMessage("Developed by play.forgedfactions.com");
         Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     }
 
     public boolean onCommand(CommandSender sender, org.bukkit.command.Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("rct")) { //checking command
-            if(sender.hasPermission("rct.admin")) {
+            if (sender.hasPermission("rct.admin")) {
                 if (args.length > 0) {  //checking if player sends command && has an argument
                     if (args[0].equalsIgnoreCase("reload")) {
                         getConfig();
@@ -40,21 +40,23 @@ public class RandomTimer extends JavaPlugin {
                     } else if (args[0].equalsIgnoreCase("list")) {
                         listCommands(sender);
                     } else if (names.contains(args[0])) { //checks if object name is in config - as per register commands method
-                        int index = getIndex(args[0]); //saves index of command in commandList
-                        if (args.length > 1) {
-                            if (args[1].equalsIgnoreCase("start") && index != -1) { //checks if command is start as well as if its in the list
-                                startCommand(sender, args, index);
-                            } else if (args[1].equalsIgnoreCase("stop") && index != -1) { //stops command
-                                stopCommand(sender, args, index);
-                            } else if (args[1].equalsIgnoreCase("execute")) {
-                                executeCommand(sender, args, index);
-                            } else if (args[1].equalsIgnoreCase("time")) {
-                                sender.sendMessage("Time left on " + args[0] + ": " + (commandList.get(index).getRand() - commandList.get(index).getCycles()) + " seconds.");
-                            } else if (index == -1) {
-                                sender.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' was not found in registered commands!");
+                        if (getIndex(args[0]) != -1) {
+                            int index = getIndex(args[0]); //saves index of command in commandList
+                            if (args.length > 1) {
+                                if (args[1].equalsIgnoreCase("start") && index != -1) { //checks if command is start as well as if its in the list
+                                    startCommand(sender, args, index);
+                                } else if (args[1].equalsIgnoreCase("stop") && index != -1) { //stops command
+                                    stopCommand(sender, args, index);
+                                } else if (args[1].equalsIgnoreCase("execute")) {
+                                    executeCommand(sender, args, index);
+                                } else if (args[1].equalsIgnoreCase("time")) {
+                                    sender.sendMessage("Time left on " + args[0] + ": " + (commandList.get(index).getRand() - commandList.get(index).getCycles()) + " seconds.");
+                                }
+                            } else {
+                                sender.sendMessage(ChatColor.RED.toString() + "[RCT] Please use 'start', 'stop', 'execute', or 'time'");
                             }
                         } else {
-                            sender.sendMessage(ChatColor.RED.toString() + "[RCT] Please use 'start', 'stop', 'execute', or 'time'");
+                            sender.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' was not found in registered commands!");
                         }
                     } else {
                         sender.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' is not a valid command!");
@@ -102,7 +104,7 @@ public class RandomTimer extends JavaPlugin {
         }
     }
 
-    private void executeCommand(CommandSender sender, String[] args, int index){
+    private void executeCommand(CommandSender sender, String[] args, int index) {
         commandList.get(index).setRand(commandList.get(index).getMin() + (int) (Math.random() * ((commandList.get(index).getMax() - commandList.get(index).getMin()) + 1))); //gets new random delay
         commandList.get(index).setCycles(0);
         runCommands(args, index);
@@ -116,9 +118,9 @@ public class RandomTimer extends JavaPlugin {
         Bukkit.getServer().getConsoleSender().sendMessage(ChatColor.GREEN.toString() + args[0] + "' was successfully executed! '" + commandList.get(index).getRand() + "' seconds until next execution.");
     }
 
-    private void listCommands(CommandSender sender){
+    private void listCommands(CommandSender sender) {
         sender.sendMessage("~~~~~~~~~~~[RCT Commands]~~~~~~~~~~~~");
-        for (int i = 0; i < commandList.size(); i++){
+        for (int i = 0; i < commandList.size(); i++) {
             sender.sendMessage("* " + commandList.get(i).getName());
         }
         sender.sendMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
