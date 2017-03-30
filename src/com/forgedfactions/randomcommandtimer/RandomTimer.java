@@ -13,13 +13,23 @@ public class RandomTimer extends JavaPlugin {
 
     private static final List<Command> commandList = new ArrayList<>(); //holds command objects
     private final List<String> names = new ArrayList<>();
+    String VERSION = "3.1.7";
 
     public void onEnable() {
         this.saveDefaultConfig(); //creates config
         registerCommands(); //creates and adds command objects
         Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~[RCT]~~~~~~~~~~~~~~~~");
         Bukkit.getServer().getConsoleSender().sendMessage("RandomTimedCommands is now enabled!");
-        Bukkit.getServer().getConsoleSender().sendMessage("Version 3.1.6");
+        Bukkit.getServer().getConsoleSender().sendMessage("Version " + VERSION);
+        Bukkit.getServer().getConsoleSender().sendMessage("Developed by play.forgedfactions.com");
+        Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    }
+
+    public void onDisable(){
+        saveConfig();
+        Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~[RCT]~~~~~~~~~~~~~~~~");
+        Bukkit.getServer().getConsoleSender().sendMessage("RandomTimedCommands is now disabled");
+        Bukkit.getServer().getConsoleSender().sendMessage("Version " + VERSION);
         Bukkit.getServer().getConsoleSender().sendMessage("Developed by play.forgedfactions.com");
         Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     }
@@ -29,11 +39,11 @@ public class RandomTimer extends JavaPlugin {
             if (sender.hasPermission("rct.admin")) {
                 if (args.length > 0) {  //checking if player sends command && has an argument
                     if (args[0].equalsIgnoreCase("reload")) {
-                        getConfig();
+                        saveConfig();
                         reloadConfig(); //reload config file from disk
                         registerCommands(); //recreate command objects
-                        Bukkit.getPluginManager().disablePlugin(Bukkit.getServer().getPluginManager().getPlugin("RandomCommandTimer"));
-                        Bukkit.getPluginManager().enablePlugin(Bukkit.getServer().getPluginManager().getPlugin("RandomCommandTimer"));
+                        Bukkit.getPluginManager().disablePlugin(this);
+                        Bukkit.getPluginManager().enablePlugin(this);
                         sender.sendMessage(ChatColor.GREEN.toString() + "[RCT] RCT was successfully reloaded!");
                     } else if (args[0].equalsIgnoreCase("help")) {
                         sendHelp(sender);
