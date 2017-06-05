@@ -7,10 +7,12 @@ permissions:
   rct.admin:
     description: Access to rct commands
     default: op
+  rct.time:
+    description: Access to time command
+    default: op
 commands:
   rct:
     description: Executes a command any time in a set range.
-    permission: rct.admin
     usage: /rct [command name] [start/stop/execute/time]
   rct list:
         description: List all registered commands
