@@ -13,7 +13,7 @@ public class RandomTimer extends JavaPlugin {
 
     private static final List<Command> commandList = new ArrayList<>(); //holds command objects
     private final List<String> names = new ArrayList<>();
-    String VERSION = "3.1.7";
+    String VERSION = "3.2.1";
 
     public void onEnable() {
         this.saveDefaultConfig(); //creates config
@@ -25,8 +25,9 @@ public class RandomTimer extends JavaPlugin {
         Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     }
 
-    public void onDisable(){
+    public void onDisable() {
         saveConfig();
+        terminateCommands();
         Bukkit.getServer().getConsoleSender().sendMessage("~~~~~~~~~~~~~~~~[RCT]~~~~~~~~~~~~~~~~");
         Bukkit.getServer().getConsoleSender().sendMessage("RandomTimedCommands is now disabled");
         Bukkit.getServer().getConsoleSender().sendMessage("Version " + VERSION);
@@ -36,69 +37,76 @@ public class RandomTimer extends JavaPlugin {
 
     public boolean onCommand(CommandSender sender, org.bukkit.command.Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("rct")) { //checking command
-                if (args.length > 0) {  //checking if player sends command && has an argument
-                    if (args[0].equalsIgnoreCase("reload")) {
-                        if (sender.hasPermission("rct.admin")) {
-                            saveConfig();
-                            reloadConfig(); //reload config file from disk
-                            registerCommands(); //recreate command objects
-                            Bukkit.getPluginManager().disablePlugin(this);
-                            Bukkit.getPluginManager().enablePlugin(this);
-                            sender.sendMessage(ChatColor.GREEN.toString() + "[RCT] RCT was successfully reloaded!");
-                        } else {
-                            sender.sendMessage(ChatColor.RED + "[RCT] No permission to execute this command!");
-                        }
-                    } else if (args[0].equalsIgnoreCase("help")) {
-                        if (sender.hasPermission("rct.admin")) {
-                            sendHelp(sender);
-                        } else {
-                            sender.sendMessage(ChatColor.RED + "[RCT] No permission to execute this command!");
-                        }
-                    } else if (args[0].equalsIgnoreCase("list")) {
-                        if (sender.hasPermission("rct.admin")) {
-                            listCommands(sender);
-                        } else {
-                            sender.sendMessage(ChatColor.RED + "[RCT] No permission to execute this command!");
-                        }
-                    } else if (names.contains(args[0])) { //checks if object name is in config - as per register commands method
-                        if (getIndex(args[0]) != -1) {
-                            int index = getIndex(args[0]); //saves index of command in commandList
-                            if (args.length > 1) {
-                                if (args[1].equalsIgnoreCase("start") && index != -1) { //checks if command is start as well as if its in the list
-                                    if (sender.hasPermission("rct.admin")) {
-                                        startCommand(sender, args, index);
-                                    } else {
-                                        sender.sendMessage(ChatColor.RED + "[RCT] No permission to execute this command!");
-                                    }
-                                } else if (args[1].equalsIgnoreCase("stop") && index != -1) { //stops command
-                                    if (sender.hasPermission("rct.admin")) {
-                                        stopCommand(sender, args, index);
-                                    } else {
-                                        sender.sendMessage(ChatColor.RED + "[RCT] No permission to execute this command!");
-                                    }
-                                } else if (args[1].equalsIgnoreCase("execute")) {
-                                    if (sender.hasPermission("rct.admin")) {
-                                        executeCommand(sender, args, index);
-                                    } else {
-                                        sender.sendMessage(ChatColor.RED + "[RCT] No permission to execute this command!");
-                                    }
-                                } else if (args[1].equalsIgnoreCase("time")) {
-                                    if (sender.hasPermission("rct.admin") || sender.hasPermission("rct.time")) {
-                                        sender.sendMessage(commandList.get(index).getTime() + (commandList.get(index).getRand() - commandList.get(index).getCycles()) + " seconds.");
-                                    } else {
-                                        sender.sendMessage(ChatColor.RED + "[RCT] No permission to execute this command!");
-                                    }
+            if (args.length > 0) {  //checking if player sends command && has an argument
+                if (args[0].equalsIgnoreCase("reload")) {
+                    if (sender.hasPermission("rct.admin")) {
+                        saveConfig();
+                        reloadConfig(); //reload config file from disk
+                        registerCommands(); //recreate command objects
+                        Bukkit.getPluginManager().disablePlugin(this);
+                        Bukkit.getPluginManager().enablePlugin(this);
+                        sender.sendMessage(ChatColor.GREEN.toString() + "[RCT] RCT was successfully reloaded!");
+                    } else {
+                        sender.sendMessage(ChatColor.RED + "[RCT] No permission to execute this command!");
+                    }
+                } else if (args[0].equalsIgnoreCase("help")) {
+                    if (sender.hasPermission("rct.admin")) {
+                        sendHelp(sender);
+                    } else {
+                        sender.sendMessage(ChatColor.RED + "[RCT] No permission to execute this command!");
+                    }
+                } else if (args[0].equalsIgnoreCase("list")) {
+                    if (sender.hasPermission("rct.admin")) {
+                        listCommands(sender);
+                    } else {
+                        sender.sendMessage(ChatColor.RED + "[RCT] No permission to execute this command!");
+                    }
+                } else if (args[0].equalsIgnoreCase("stopall")) {
+                    if (sender.hasPermission("rct.admin")) {
+                        terminateCommands();
+                        sender.sendMessage(ChatColor.GREEN.toString() + "[RCT] all commands were successfully terminated!");
+                    } else {
+                        sender.sendMessage(ChatColor.RED + "[RCT] No permission to execute this command!");
+                    }
+                } else if (names.contains(args[0])) { //checks if object name is in config - as per register commands method
+                    if (getIndex(args[0]) != -1) {
+                        int index = getIndex(args[0]); //saves index of command in commandList
+                        if (args.length > 1) {
+                            if (args[1].equalsIgnoreCase("start") && index != -1) { //checks if command is start as well as if its in the list
+                                if (sender.hasPermission("rct.admin")) {
+                                    startCommand(sender, args, index);
+                                } else {
+                                    sender.sendMessage(ChatColor.RED + "[RCT] No permission to execute this command!");
                                 }
-                            } else {
-                                sender.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' is not a valid command!");
-                                sender.sendMessage(ChatColor.RED.toString() + "[RCT] Please use 'start', 'stop', 'execute', or 'time'");
+                            } else if (args[1].equalsIgnoreCase("stop") && index != -1) { //stops command
+                                if (sender.hasPermission("rct.admin")) {
+                                    stopCommand(sender, args, index);
+                                } else {
+                                    sender.sendMessage(ChatColor.RED + "[RCT] No permission to execute this command!");
+                                }
+                            } else if (args[1].equalsIgnoreCase("execute")) {
+                                if (sender.hasPermission("rct.admin")) {
+                                    executeCommand(sender, args, index);
+                                } else {
+                                    sender.sendMessage(ChatColor.RED + "[RCT] No permission to execute this command!");
+                                }
+                            } else if (args[1].equalsIgnoreCase("time")) {
+                                if (sender.hasPermission("rct.admin") || sender.hasPermission("rct.time")) {
+                                    sender.sendMessage(commandList.get(index).getTime() + (commandList.get(index).getRand() - commandList.get(index).getCycles()) + " seconds.");
+                                } else {
+                                    sender.sendMessage(ChatColor.RED + "[RCT] No permission to execute this command!");
+                                }
                             }
                         } else {
-                            sender.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' was not found in registered commands!");
+                            sender.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' is not a valid command!");
+                            sender.sendMessage(ChatColor.RED.toString() + "[RCT] Please use 'start', 'stop', 'execute', or 'time'");
                         }
                     } else {
-                       sendHelp(sender);
+                        sender.sendMessage(ChatColor.RED.toString() + "[RCT] '" + args[0] + "' was not found in registered commands!");
                     }
+                } else {
+                    sendHelp(sender);
+                }
             }
             return true;
         }
@@ -136,6 +144,15 @@ public class RandomTimer extends JavaPlugin {
         }
     }
 
+    private void terminateCommands() {
+        for (int i = 0; i < commandList.size(); i++) {
+            if (commandList.get(i).getRunning()) {
+                Bukkit.getScheduler().cancelTask(commandList.get(i).getId());
+                commandList.get(i).setRunning(false);
+            }
+        }
+    }
+
     private void executeCommand(CommandSender sender, String[] args, int index) {
         commandList.get(index).setRand(commandList.get(index).getMin() + (int) (Math.random() * ((commandList.get(index).getMax() - commandList.get(index).getMin()) + 1))); //gets new random delay
         commandList.get(index).setCycles(0);
@@ -153,10 +170,11 @@ public class RandomTimer extends JavaPlugin {
     private void listCommands(CommandSender sender) {
         sender.sendMessage("~~~~~~~~~~~[RCT Commands]~~~~~~~~~~~~");
         for (int i = 0; i < commandList.size(); i++) {
-            if(commandList.get(i).getRunning()){
-                sender.sendMessage("* " + commandList.get(i).getName() + "[Running]");}
-            else{
-                sender.sendMessage("* " + commandList.get(i).getName() + "[Stopped]");}
+            if (commandList.get(i).getRunning()) {
+                sender.sendMessage("* " + commandList.get(i).getName() + "[Running]");
+            } else {
+                sender.sendMessage("* " + commandList.get(i).getName() + "[Stopped]");
+            }
         }
         sender.sendMessage("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     }
@@ -192,6 +210,10 @@ public class RandomTimer extends JavaPlugin {
         sender.sendMessage("~~~~~~~~~~~~~~~[RCT Help]~~~~~~~~~~~~~~~~");
         sender.sendMessage("/rct reload");
         sender.sendMessage("- reload the plugin");
+        sender.sendMessage("/rct list");
+        sender.sendMessage("- lists all registered timed commands");
+        sender.sendMessage("/rct stopall");
+        sender.sendMessage("- stops all running timed commands");
         sender.sendMessage("/rct <commandname> start/stop/execute/time");
         sender.sendMessage("- start or stop a command");
         sender.sendMessage("- execute a command immediately");
