@@ -20,7 +20,9 @@ class Command {
     }
 
     //setter methods
-    void setId(int id) { this.id = id; } //sets id of command after starting task
+    void setId(int id) {
+        this.id = id;
+    } //sets id of command after starting task
 
     void setRunning(boolean running) {
         this.running = running;
@@ -57,9 +59,7 @@ class Command {
         return running;
     }
 
-    int getId() {
-        return id;
-    }
+    int getId() { return id; }
 
     int getCycles() {
         return cycles;
